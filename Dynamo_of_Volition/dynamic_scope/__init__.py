@@ -3,76 +3,44 @@ from collections import abc
 from types import FunctionType
 import inspect
 
-
 class DynamicScope(abc.Mapping):
     def __init__(self):
-        # Dictionary to store the environment variables
         self.env: Dict[str, Optional[Any]] = {}
 
-    def __getitem__(self, key: str) -> Optional[Any]:
-        if key not in self.env.keys():
-            # Raise an error if the variable is not defined in the scope
-            raise NameError(f"Name '{key}' is not defined.")
-        if self.env[key] == '__unbound__':
-            # Raise an error if the variable is referenced before assignment
-            raise UnboundLocalError(f"Name '{key}' was referenced before assignment.")
-        return self.env[key]
+    def __getitem__(self, key: str):
+        if key not in self.env:
+            raise NameError(f"Variable '{key}' is not defined in the dynamic scope.")
+        elif self.env[key] is "_unbnd_":
+            raise UnboundLocalError(f"Variable '{key}' is unbound in the dynamic scope.")
+        else:
+            return self.env[key]
 
-    def __setitem__(self, key: str, value: Optional[Any]):
-        if key not in self.env.keys():
-            # Add a new variable to the scope
-            self.env[key] = value
-
-    def __iter__(self) -> Iterator[str]:
-        # Provide an iterator over the variable names in the scope
-        return self.env.__iter__()
+    def __contains__(self, value: str):
+        return self.env.__contains__(value)
 
     def __len__(self) -> int:
-        # Return the number of variables in the scope
         return len(self.env)
 
+    def __iter__(self):
+        return self.env.__iter__()
 
 def get_dynamic_re() -> DynamicScope:
-    # creating a new instance of dynamic scope
-    dyn_scope = DynamicScope()
-    # get call stack
+    # Initialize inspect.stack() and create a DynamicScope instance
     stack = inspect.stack()
-    # get code object of the current function
-    current_function = inspect.currentframe().f_code
+    dynamic_scope = DynamicScope()
 
-    # iteration over frames in a given call stack
-    skip_current = False  # Flag to skip the current function frame
+    # Iterate through each frame in the call stack (except the first one)
     for frame_info in stack[1:]:
-        # gets frame object
         frame = frame_info.frame
-        # get code object of current frame
-        code = frame.f_code
 
-        if skip_current:
-            # Skip the frame if the flag is set
-            skip_current = False
-            continue
+        # Check if each item in the frame's variables is in the union of co_varnames and co_freevars and not in the locals
+        for item in (list(frame.f_code.co_freevars) + list(frame.f_code.co_varnames)):
+            if item not in frame.f_locals.keys():
+                dynamic_scope.env[item] = "_unbnd_"  # Set the item to "_unbnd_" if it is unbound
 
-        if code.co_name == current_function.co_name and code.co_filename == current_function.co_filename:
-            # Set the flag to skip the current frame and continue to the next one
-            skip_current = True
-            continue
+        # Add key-value pairs from the frame's local variables to the dynamic environment
+        for key, value in frame.f_locals.items():
+            if key not in list(frame.f_code.co_freevars) and key not in dynamic_scope.env:
+                dynamic_scope.env[key] = value
 
-        # get the free variables
-        free_vars = list(code.co_freevars)
-        # get local variables that are not free
-        local_vars = {key: value for (key, value) in frame.f_locals.items() if key not in free_vars}
-
-        # add local variables to dynamic scope
-        for var_name, var_value in local_vars.items():
-            dyn_scope[var_name] = var_value
-
-        # Check for if there are no local variables in frame, given there are other variables that exist
-        all_vars = code.co_cellvars + code.co_varnames
-        if not len(frame.f_locals) and len(all_vars):
-            # define as __unbound__ in the dynamic scope
-            for var in all_vars:
-                dyn_scope[var] = '__unbound__'
-
-    # return the dynamic scope
-    return dyn_scope
+    return dynamic_scope
