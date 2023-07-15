@@ -1,7 +1,7 @@
 package edu.uc.cs3003.medava;
 
-public class Medicine {
-
+public abstract class Medicine {
+    public abstract MedicineSchedule getSchedule();
     private String mMedicineName;
     public String getMedicineName() {
         return mMedicineName;
