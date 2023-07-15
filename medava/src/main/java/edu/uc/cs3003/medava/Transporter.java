@@ -10,9 +10,9 @@ public class Transporter {
     private String mTransporterName;
     private double mLowTemperature, mHighTemperature;
 
-    private List<Object> goods;
+    private List<Shippable> goods;
     {
-        goods = new ArrayList<Object>();
+        goods = new ArrayList<Shippable>();
     }
 
     public String getTransporterName() {
@@ -23,20 +23,27 @@ public class Transporter {
         // Do some shipping!
     }
 
-    public boolean load(Object itemToLoad) {
-        try {
-            Method isTemperatureRangeAcceptableMethod = itemToLoad.getClass().getMethod("isTemperatureRangeAcceptable",
-                    Double.class, Double.class);
-            boolean resultOfMethodCall = (boolean) isTemperatureRangeAcceptableMethod.invoke(itemToLoad,
-                    Double.valueOf(mLowTemperature), Double.valueOf(mHighTemperature));
-            if (resultOfMethodCall) {
-                goods.add(itemToLoad);
-            }
-            return resultOfMethodCall;
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                 | InvocationTargetException e) {
-            return false;
+//    public boolean load(Object itemToLoad) {
+//        try {
+//            Method isTemperatureRangeAcceptableMethod = itemToLoad.getClass().getMethod("isTemperatureRangeAcceptable",
+//                    Double.class, Double.class);
+//            boolean resultOfMethodCall = (boolean) isTemperatureRangeAcceptableMethod.invoke(itemToLoad,
+//                    Double.valueOf(mLowTemperature), Double.valueOf(mHighTemperature));
+//            if (resultOfMethodCall) {
+//                goods.add(itemToLoad);
+//            }
+//            return resultOfMethodCall;
+//        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+//                 | InvocationTargetException e) {
+//            return false;
+//        }
+//    }
+
+    public boolean load(Shippable itemToLoad) {
+        if (itemToLoad.isTemperatureRangeAcceptable(mLowTemperature, mHighTemperature)) {
+            return goods.add(itemToLoad);
         }
+        return false;
     }
 
     public Transporter(String transporterName, double lowTemp, double highTemp) {
@@ -45,7 +52,11 @@ public class Transporter {
         mHighTemperature = highTemp;
     }
 
-    public Object unload() {
+//    public Object unload() {
+//        return goods.remove(0);
+//    }
+
+    public Shippable unload() {
         return goods.remove(0);
     }
 

@@ -1,6 +1,6 @@
 package edu.uc.cs3003.medava;
 
-public abstract class Medicine {
+public abstract class Medicine implements Shippable {
     public abstract MedicineSchedule getSchedule();
     private String mMedicineName;
     public String getMedicineName() {
