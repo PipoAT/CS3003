@@ -7,4 +7,4 @@ This assingment is currently in development
 - Test whether the implementation of recognizing unbound local variables handles None-valued variables. [PASSED]
 - Test whether accessing a nonexistent variable raises NameError. [PASSED]
 - Test the basic functionality. [PASSED]
-- Test whether get_dynamic_re properly skips itself when creating the referencing environment. [FAILED/IN PROGRESS]
+- Test whether get_dynamic_re properly skips itself when creating the referencing environment. [PASSED]
