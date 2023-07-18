@@ -1,0 +1,7 @@
+What is the Java Virtual Machine (JVM), and why is it important?
+
+Why does Java need the SDK unlike other programming lanugages?
+
+Does Java provide support for methods that are asynchronous?
+
+What are the differences between Java and Kotlin? Or other languages where the syntax are similar like the C family of languages?
